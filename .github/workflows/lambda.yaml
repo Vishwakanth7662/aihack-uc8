@@ -51,7 +51,7 @@ jobs:
                 --zip-file "fileb://$zip_file"
             else
               echo "Function does not exist. Creating..."
-              aws lambda update-function \
+              aws lambda create-function \
                 --function-name "$function_name" \
                 --runtime python3.12 \
                 --role "arn:aws:iam::269854564686:role/hackathon-lambda-role" \
