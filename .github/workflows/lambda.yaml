@@ -3,8 +3,6 @@ name: Deploy Lambdas
 on:
   push:
     branches: [main]
-    paths:
-      - 'backend/**'
   workflow_dispatch:
 
 env:
@@ -48,8 +46,7 @@ jobs:
               echo "Function exists. Updating..."
               aws lambda update-function-code \
                 --function-name "$function_name" \
-                --zip-file "fileb://$zip_file" \
-                --timeout 900
+                --zip-file "fileb://$zip_file"
             else
               echo "Function does not exist. Creating..."
               aws lambda create-function \
