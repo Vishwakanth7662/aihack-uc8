@@ -54,7 +54,7 @@ jobs:
               aws lambda create-function \
                 --function-name "$function_name" \
                 --runtime python3.12 \
-                --role "$LAMBDA_ROLE_ARN" \
+                --role "arn:aws:iam::269854564686:role/hackathon-lambda-role" \
                 --handler "${function_name}.lambda_handler" \
                 --zip-file "fileb://$zip_file"
             fi
