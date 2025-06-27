@@ -3,6 +3,8 @@ name: Deploy Lambdas
 on:
   push:
     branches: [main]
+    paths:
+      - 'backend/**'
   workflow_dispatch:
 
 env:
@@ -43,18 +45,24 @@ jobs:
 
             echo "Checking if function $function_name exists..."
             if aws lambda get-function --function-name "$function_name" > /dev/null 2>&1; then
-              echo "Function exists. Updating..."
-              aws lambda update-function-code \
+              echo "Function does not exist. Creating..."
+              aws lambda create-function \
                 --function-name "$function_name" \
-                --zip-file "fileb://$zip_file"
+                --runtime python3.12 \
+                --role "$LAMBDA_ROLE_ARN" \
+                --handler "${function_name}.lambda_handler" \
+                --zip-file "fileb://$zip_file" \
+                --vpc-config SubnetIds=subnet-02e62e34308bb07d5,subnet-0534b99dd34e646f1,SecurityGroupIds=sg-0b9a6b812b30a1107
+
             else
               echo "Function does not exist. Creating..."
               aws lambda create-function \
                 --function-name "$function_name" \
                 --runtime python3.12 \
-                --role "arn:aws:iam::269854564686:role/hackathon-lambda-role" \
+                --role "$LAMBDA_ROLE_ARN" \
                 --handler "${function_name}.lambda_handler" \
-                --zip-file "fileb://$zip_file"
+                --zip-file "fileb://$zip_file" \
+                --vpc-config SubnetIds=subnet-02e62e34308bb07d5,subnet-0534b99dd34e646f1,SecurityGroupIds=sg-0b9a6b812b30a1107
             fi
           done
 
