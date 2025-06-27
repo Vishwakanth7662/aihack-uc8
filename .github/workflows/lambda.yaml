@@ -48,7 +48,8 @@ jobs:
               echo "Function exists. Updating..."
               aws lambda update-function-code \
                 --function-name "$function_name" \
-                --zip-file "fileb://$zip_file"
+                --zip-file "fileb://$zip_file" \
+                --timeout 900
             else
               echo "Function does not exist. Creating..."
               aws lambda create-function \
@@ -57,6 +58,7 @@ jobs:
                 --role "arn:aws:iam::269854564686:role/hackathon-lambda-role" \
                 --handler "${function_name}.lambda_handler" \
                 --zip-file "fileb://$zip_file" \
+                --timeout 900 \
                 --vpc-config SubnetIds=subnet-02e62e34308bb07d5,subnet-0534b99dd34e646f1,SecurityGroupIds=sg-0b9a6b812b30a1107
             fi
           done
