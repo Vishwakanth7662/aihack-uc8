@@ -37,15 +37,26 @@ jobs:
         run: |
           for file in $LAMBDA_DIR/*.py; do
             filename=$(basename -- "$file")
-            echo "Deploying function: $filename" 
             function_name="${filename%.*}"
             zip_file="/tmp/${function_name}.zip"
-            
+
             echo "Zipping $file as $zip_file"
             zip -j "$zip_file" "$file" > /dev/null
 
-            echo "Deploying function: $function_name"
-            aws lambda update-function-code \
-              --function-name "$function_name" \
-              --zip-file "fileb://$zip_file"
+            echo "Checking if function $function_name exists..."
+            if aws lambda get-function --function-name "$function_name" > /dev/null 2>&1; then
+              echo "Function exists. Updating..."
+              aws lambda update-function-code \
+                --function-name "$function_name" \
+                --zip-file "fileb://$zip_file"
+            else
+              echo "Function does not exist. Creating..."
+              aws lambda create-function \
+                --function-name "$function_name" \
+                --runtime python3.12 \
+                --role "$LAMBDA_ROLE_ARN" \
+                --handler "${function_name}.lambda_handler" \
+                --zip-file "fileb://$zip_file"
+            fi
           done
+
