@@ -1,0 +1,50 @@
+name: Deploy Lambdas
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'lambdas/**'
+  workflow_dispatch:
+
+env:
+  LAMBDA_DIR: backend
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install AWS CLI
+        run: pip install awscli
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1  # Adjust to your AWS region
+
+      - name: Deploy Python Lambda Files
+        run: |
+          for file in $LAMBDA_DIR/*.py; do
+            filename=$(basename -- "$file")
+            function_name="${filename%.*}"
+            zip_file="/tmp/${function_name}.zip"
+            
+            echo "Zipping $file as $zip_file"
+            zip -j "$zip_file" "$file" > /dev/null
+
+            echo "Deploying function: $function_name"
+            aws lambda update-function-code \
+              --function-name "$function_name" \
+              --zip-file "fileb://$zip_file"
+          done
