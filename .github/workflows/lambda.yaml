@@ -37,6 +37,7 @@ jobs:
         run: |
           for file in $LAMBDA_DIR/*.py; do
             filename=$(basename -- "$file")
+            echo "Deploying function: $filename" 
             function_name="${filename%.*}"
             zip_file="/tmp/${function_name}.zip"
             
